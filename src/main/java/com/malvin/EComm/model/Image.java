@@ -1,5 +1,6 @@
 package com.malvin.EComm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +14,6 @@ import java.sql.Blob;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-
 public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +25,7 @@ public class Image {
     private Blob image;
     private String downloadUrl;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;

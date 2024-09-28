@@ -1,13 +1,19 @@
 package com.malvin.EComm.service.product;
 
+import com.malvin.EComm.dto.ImageDto;
+import com.malvin.EComm.dto.ProductDto;
+import com.malvin.EComm.exception.AlreadyExistsException;
 import com.malvin.EComm.exception.ResourceNotFoundException;
 import com.malvin.EComm.model.Category;
+import com.malvin.EComm.model.Image;
 import com.malvin.EComm.model.Product;
 import com.malvin.EComm.repository.CategoryRepository;
+import com.malvin.EComm.repository.ImageRepository;
 import com.malvin.EComm.repository.ProductRepository;
 import com.malvin.EComm.request.AddProductRequest;
 import com.malvin.EComm.request.UpdateProductRequest;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,18 +25,28 @@ public class ProductService implements IProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ImageRepository imageRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public Product addProduct(AddProductRequest request) {
-        //check if category is found in the DB
-        //if yes, setIt as the new product category
-        //if no, then save it as a new category
-        //then set as the new product Category
 
-        Category category = Optional.ofNullable(categoryRepository.findByName(String.valueOf(request.getCategory())))
-                .orElseThrow();
+        if(productExists(request.getName(), request.getBrand())){
+            throw new AlreadyExistsException(request.getBrand() + " "+ request.getName() + " Already Exists!!, You May Update Its Quantity Instead");
+        }
+        Category category = Optional.ofNullable(categoryRepository.findByName(request.getCategory().getName()))
+                        .orElseGet(()->{
+                                Category newCategory =new Category();
+                                newCategory.setName(request.getCategory().getName());
+                            return categoryRepository.save(newCategory);
+                        });
+
         request.setCategory(category);
         return productRepository.save(createProduct(request,category));
+    }
+
+    private boolean productExists(String name, String brand){
+        return productRepository.existsByNameAndBrand(name, brand);
     }
 
     private Product createProduct(AddProductRequest request, Category category){
@@ -110,4 +126,20 @@ public class ProductService implements IProductService {
     public Long countProductsByBrandAndName(String brand, String name) {
         return productRepository.countByBrandAndName(brand, name);
     }
+    @Override
+    public List<ProductDto> getConvertedProducts(List<Product> products){
+        return  products.stream().map(this:: convertToDto).toList();
+    }
+    @Override
+    public ProductDto convertToDto(Product product){
+        ProductDto productDto = modelMapper.map(product, ProductDto.class);
+        List<Image> images = imageRepository.findByProductId(product.getId());
+        List<ImageDto> imagesDtos = images
+                .stream()
+                .map(image-> modelMapper.map(image,ImageDto.class))
+                .toList();
+        productDto.setImages(imagesDtos);
+        return productDto;
+    }
 }
+

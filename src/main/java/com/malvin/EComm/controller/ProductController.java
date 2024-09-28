@@ -1,5 +1,7 @@
 package com.malvin.EComm.controller;
 
+import com.malvin.EComm.dto.ProductDto;
+import com.malvin.EComm.exception.AlreadyExistsException;
 import com.malvin.EComm.exception.ResourceNotFoundException;
 import com.malvin.EComm.model.Product;
 import com.malvin.EComm.request.AddProductRequest;
@@ -9,6 +11,7 @@ import com.malvin.EComm.service.product.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,29 +25,33 @@ public class ProductController {
     @GetMapping("/all")
     public ResponseEntity<ApiResponse> getAllProducts(){
         List<Product> products = productService.getAllProducts();
-        return ResponseEntity.ok(new ApiResponse("All Found", products));
+        List<ProductDto> convertedProducts = productService.getConvertedProducts(products);
+        return ResponseEntity.ok(new ApiResponse("All Found", convertedProducts));
     }
 
     @GetMapping("/product/{productId}/product")
     public ResponseEntity<ApiResponse> getProductsById(@PathVariable Long productId){
         try {
             Product product  = productService.getProductById(productId);
-            return ResponseEntity.ok(new ApiResponse("success!!", product));
+            ProductDto convertedProduct = productService.convertToDto(product);
+            return ResponseEntity.ok(new ApiResponse("success!!", convertedProduct));
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(e.getMessage(), null ));
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<ApiResponse> addProduct(@RequestBody AddProductRequest product){
         try {
             Product theProduct = productService.addProduct(product);
             return ResponseEntity.ok(new ApiResponse("Product added successfully", theProduct));
-        } catch (Exception e) {
-            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(e.getMessage(), null));
+        } catch (AlreadyExistsException e) {
+            return  ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(e.getMessage(), null));
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/product/{productId}/update")
     public ResponseEntity<ApiResponse> updateProduct(@PathVariable Long productId, @RequestBody UpdateProductRequest request){
         try {
@@ -55,6 +62,7 @@ public class ProductController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{productId}/delete")
     public ResponseEntity<ApiResponse> deleteProduct(@PathVariable Long productId){
         try {
@@ -72,7 +80,8 @@ public class ProductController {
             if(products.isEmpty()){
                 return ResponseEntity.ok(new ApiResponse("No Products Found", null));
             }
-            return ResponseEntity.ok(new ApiResponse("success!!", products));
+            List<ProductDto> convertedProducts = productService.getConvertedProducts(products);
+            return ResponseEntity.ok(new ApiResponse("success!!", convertedProducts));
         } catch (Exception e) {
            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(e.getMessage(), null));
         }
@@ -85,7 +94,8 @@ public class ProductController {
             if(products.isEmpty()){
                 return ResponseEntity.ok(new ApiResponse("No Products Found", null));
             }
-            return ResponseEntity.ok(new ApiResponse("success!!", products));
+            List<ProductDto> convertedProducts = productService.getConvertedProducts(products);
+            return ResponseEntity.ok(new ApiResponse("success!!", convertedProducts));
         } catch (Exception e) {
             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(e.getMessage(), null));
         }
@@ -98,7 +108,8 @@ public class ProductController {
             if(products.isEmpty()){
                 return ResponseEntity.ok(new ApiResponse("No Products Found", null));
             }
-            return ResponseEntity.ok(new ApiResponse("success!!", products));
+            List<ProductDto> convertedProducts = productService.getConvertedProducts(products);
+            return ResponseEntity.ok(new ApiResponse("success!!", convertedProducts));
         } catch (Exception e) {
             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(e.getMessage(), null));
         }
@@ -111,7 +122,8 @@ public class ProductController {
             if(products.isEmpty()){
                 return ResponseEntity.ok(new ApiResponse("No Products Found", null));
             }
-            return ResponseEntity.ok(new ApiResponse("success!!", products));
+            List<ProductDto> convertedProducts = productService.getConvertedProducts(products);
+            return ResponseEntity.ok(new ApiResponse("success!!", convertedProducts));
         } catch (Exception e) {
             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(e.getMessage(), null));
         }
@@ -124,7 +136,8 @@ public class ProductController {
             if(products.isEmpty()){
                 return ResponseEntity.ok(new ApiResponse("No Products Found", null));
             }
-            return ResponseEntity.ok(new ApiResponse("success!!", products));
+            List<ProductDto> convertedProducts = productService.getConvertedProducts(products);
+            return ResponseEntity.ok(new ApiResponse("success!!", convertedProducts));
         } catch (Exception e) {
             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(e.getMessage(), null));
         }

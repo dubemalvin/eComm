@@ -1,5 +1,6 @@
 package com.malvin.EComm.service.product;
 
+import com.malvin.EComm.dto.ProductDto;
 import com.malvin.EComm.model.Product;
 import com.malvin.EComm.request.AddProductRequest;
 import com.malvin.EComm.request.UpdateProductRequest;
@@ -19,4 +20,8 @@ public interface IProductService {
     List<Product> getProductsByName(String name);
     List<Product> getProductsByBrandAndName(String brand, String name);
     Long countProductsByBrandAndName(String brand, String name);
+
+    List<ProductDto> getConvertedProducts(List<Product> products);
+
+    ProductDto convertToDto(Product product);
 }
