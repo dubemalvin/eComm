@@ -70,7 +70,7 @@ public class ImageService implements IImageService {
         Image image = getImageById(imageId);
         try {
             image.setFileName(file.getOriginalFilename());
-            image.setFileName(file.getOriginalFilename());
+            image.setFileName(file.getContentType());
             image.setImage(new SerialBlob(file.getBytes()));
             imageRepository.save(image);
         } catch (IOException | SQLException e) {
